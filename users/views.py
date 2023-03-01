@@ -52,7 +52,7 @@ class Login(APIView):
                             'username':user.username,
                             'mobile':user.mobile_number,
                             'date_of_birth':user.date_of_birth,
-                            
+
                         }
 
 
@@ -88,6 +88,8 @@ class ImageUpload(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid:
             serializer.save(user=user)
+            return Response({'message':'success'},status=status.HTTP_201_CREATED)
+        return Response({'message':'failed'},status=status.HTTP_)
 
 
 class Logout(APIView):
