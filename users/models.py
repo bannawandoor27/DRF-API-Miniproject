@@ -7,11 +7,12 @@ class User(AbstractUser):
     email = models.EmailField(unique=True,max_length=255)
     password = models.CharField(max_length=100)
     date_of_birth = models.DateField(max_length=8,default='2017-01-01')
-    profile_picture = models.ImageField(upload_to='profile_pictures',blank=True,null=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures',blank=True,null=True,default='profile_pictures/default.jpg')
+
 
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = [ 'username','mobile_number','password','date_of_birth']
+    REQUIRED_FIELDS = [ 'username','mobile_number','password','date_of_birth','profile_picture']
 
 
     

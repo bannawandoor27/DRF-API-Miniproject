@@ -73,7 +73,23 @@ class UserView(APIView):
         serializer = UserSerializer(user)
         return Response(serializer.data)
 
-        
+class ImageUpload(APIView):
+    def post(self,request):
+        token = request.COOKIES.get('jwt')
+        if token is None:
+            raise AuthenticationFailed('User is not logged in')
+        try:
+            payload = jwt.decode(token,'secret', algorithm=['HS256'])
+        except jwt.DecodeError:
+            return Response({'error':'Decode error'},status=status.HTTP_401_UNAUTHORIZED)
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Invalid token')
+        user = User.objects.filter(id=payload['user_id']).first()
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid:
+            serializer.save(user=user)
+
+
 class Logout(APIView):
     def post(self,request):
         response = Response()
