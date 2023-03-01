@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group
 
 
 class UserSerializer(serializers.ModelSerializer):
+    image_url  = serializers.ImageField(required=False)
     class Meta:
         model = User
         fields = '__all__'

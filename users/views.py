@@ -3,12 +3,13 @@ from django.shortcuts import render
 #import response from drf
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
+from rest_framework import status,permissions
 from .serializers import UserSerializer
 from .models import User
 from rest_framework.exceptions import AuthenticationFailed
 import jwt,datetime
-
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class Signup(APIView):
@@ -72,26 +73,7 @@ class UserView(APIView):
         user = User.objects.filter(id=payload['user_id']).first()
         serializer = UserSerializer(user)
         return Response(serializer.data)
-
-class ImageUpload(APIView):
-    def post(self,request):
-        token = request.COOKIES.get('jwt')
-        if token is None:
-            raise AuthenticationFailed('User is not logged in')
-        try:
-            payload = jwt.decode(token,'secret', algorithm=['HS256'])
-        except jwt.DecodeError:
-            return Response({'error':'Decode error'},status=status.HTTP_401_UNAUTHORIZED)
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Invalid token')
-        user = User.objects.filter(id=payload['user_id']).first()
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid:
-            serializer.save(user=user)
-            return Response({'message':'success'},status=status.HTTP_201_CREATED)
-        return Response({'message':'failed'},status=status.HTTP_)
-
-
+    
 class Logout(APIView):
     def post(self,request):
         response = Response()
@@ -101,3 +83,10 @@ class Logout(APIView):
         }
         return response
         
+class ProfileView(APIView):
+    serializer_class = UserSerializer
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly]
+    def perform_create(self, serializer):
+        serializer.save(user_id=self.request.user.user_id)
