@@ -25,7 +25,7 @@ class Login(APIView):
     def post(self,request):
         email = request.data.get('email')
         password = request.data.get('password')
-
+        print(email)
         user = User.objects.filter(email=email).first()
         
         if user is None:
@@ -40,7 +40,7 @@ class Login(APIView):
             'iat': datetime.datetime.utcnow()
 
         }
-        token = jwt.encode(payload,'secret', algorithm='HS256').decode('utf-8')
+        token = jwt.encode(payload,'secret', algorithm='HS256')
 
 
         response = Response()
