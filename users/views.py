@@ -52,7 +52,7 @@ class Login(APIView):
                             'username':user.username,
                             'mobile':user.mobile_number,
                             'date_of_birth':user.date_of_birth,
-
+                            
                         }
 
 
