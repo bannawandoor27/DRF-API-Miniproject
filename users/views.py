@@ -48,7 +48,6 @@ class Login(APIView):
         response.data = {
                             'user_id': user.id,
                             'email': user.email,
-                            'name': user.name,
                             'token': token
                         }
 
