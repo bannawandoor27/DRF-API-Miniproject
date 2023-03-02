@@ -84,7 +84,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'User_management.wsgi.application'
-
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240 # higher than the count of fields
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
