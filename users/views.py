@@ -85,7 +85,7 @@ class Logout(APIView):
         return response
         
 class ProfileImageView(APIView):
-    def put(self, request, format=None):
+    def patch(self, request, format=None):
         token = request.META.get('HTTP_AUTHORIZATION')
         if token is None:
             raise AuthenticationFailed('User is not logged in')
@@ -97,12 +97,8 @@ class ProfileImageView(APIView):
             raise AuthenticationFailed('Invalid token')
         user = User.objects.filter(id=payload['user_id']).first()
         serializer = UserImageSerializer(data=request.data ,instance=user)
-        print(serializer)
-
         if serializer.is_valid():
-      
             serializer.save()
-            print(serializer.data)
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
