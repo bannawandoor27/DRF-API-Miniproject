@@ -19,3 +19,12 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password) 
         instance.save()
         return instance
+class UserImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['profile_picture']
+
+    def save(self, *args, **kwargs):
+        if self.instance.profile_picture:
+            self.instance.profile_picture.delete()
+        return super().save(*args, **kwargs)

@@ -3,8 +3,11 @@ from django.shortcuts import render
 #import response from drf
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status,permissions
-from .serializers import UserSerializer
+from rest_framework.permissions import IsAuthenticated
+
+
+from rest_framework import status
+from .serializers import UserSerializer,UserImageSerializer
 from .models import User
 from rest_framework.exceptions import AuthenticationFailed
 import jwt,datetime
@@ -82,12 +85,21 @@ class Logout(APIView):
         }
         return response
         
-class ProfileView(APIView):
-    serializer_class = UserSerializer
-    parser_classes = (MultiPartParser, FormParser)
-    permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly]
-    def perform_create(self, serializer):
-        serializer.save(user_id=self.request.user.user_id)
-
-
+class ProfileImageView(APIView):
+    def put(self, request, format=None):
+        token = request.META.get('HTTP_AUTHORIZATION')
+        if token is None:
+            raise AuthenticationFailed('User is not logged in')
+        try:
+            payload = jwt.decode(token,'secret_key', algorithms=['HS256'])
+        except jwt.DecodeError:
+            return Response({'error':'Decode error'},status=status.HTTP_401_UNAUTHORIZED)
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Invalid token')
+        user = User.objects.filter(id=payload['user_id']).first()
+        serializer = UserImageSerializer(data=request.data, instance=user)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
