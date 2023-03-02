@@ -1,8 +1,7 @@
 from django.urls import path
 from .views import * 
 #import static 
-from django.conf import settings
-from django.conf.urls.static import static
+
 urlpatterns = [
     path('auth/signup/',Signup.as_view(),name='signup'),
     path('auth/signin/',Login.as_view(),name='login'),
@@ -13,5 +12,4 @@ urlpatterns = [
 ]
 
 
-urlpatterns+= static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)   
 

@@ -38,14 +38,12 @@ class Login(APIView):
         payload = {
             'user_id': user.id,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=30),
-            'iat': datetime.datetime.utcnow()
+
 
         }
-        token = jwt.encode(payload,'secret', algorithm='HS256')
-
+        token = jwt.encode(payload,'secret_key', algorithm='HS256')
 
         response = Response()
-        response.set_cookie(key='jwt',value=token,httponly=True)
         response.data = {
                             'user_id': user.id,
                             'email': user.email,
@@ -61,12 +59,12 @@ class Login(APIView):
 
 class UserView(APIView):
     def get(self,request):
-        token = request.COOKIES.get('jwt')
-        print(request.META.get('HTTP_AUTHORIZATION'))
+        token = request.META.get('HTTP_AUTHORIZATION')
+        print(token)
         if token is None:
             raise AuthenticationFailed('User is not logged in')
         try:
-            payload = jwt.decode(token,'secret', algorithm=['HS256'])
+            payload = jwt.decode(token,'secret_key', algorithms=['HS256'])
         except jwt.DecodeError:
             return Response({'error':'Decode error'},status=status.HTTP_401_UNAUTHORIZED)
         except jwt.ExpiredSignatureError:
@@ -91,3 +89,5 @@ class ProfileView(APIView):
         permissions.IsAuthenticatedOrReadOnly]
     def perform_create(self, serializer):
         serializer.save(user_id=self.request.user.user_id)
+
+
