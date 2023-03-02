@@ -62,6 +62,7 @@ class Login(APIView):
 class UserView(APIView):
     def get(self,request):
         token = request.COOKIES.get('jwt')
+        print(request.META.get('HTTP_AUTHORIZATION'))
         if token is None:
             raise AuthenticationFailed('User is not logged in')
         try:
