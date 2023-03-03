@@ -87,6 +87,7 @@ class Logout(APIView):
 class ProfileImageView(APIView):
     def put(self, request, format=None):
         token = request.META.get('HTTP_AUTHORIZATION')
+        print(request.data)
         if token is None:
             raise AuthenticationFailed('User is not logged in')
         try:
@@ -99,7 +100,7 @@ class ProfileImageView(APIView):
         serializer = UserImageSerializer(data=request.data ,instance=user)
         if serializer.is_valid():
             serializer.save()
-
+            print(serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
