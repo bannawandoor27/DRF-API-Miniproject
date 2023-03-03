@@ -85,7 +85,7 @@ class Logout(APIView):
         return response
         
 class ProfileImageView(APIView):
-    def patch(self, request, format=None):
+    def put(self, request, format=None):
         token = request.META.get('HTTP_AUTHORIZATION')
         if token is None:
             raise AuthenticationFailed('User is not logged in')
