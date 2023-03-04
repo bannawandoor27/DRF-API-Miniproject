@@ -74,15 +74,6 @@ class UserView(APIView):
         user = User.objects.filter(id=payload['user_id']).first()
         serializer = UserSerializer(user)
         return Response(serializer.data)
-    
-class Logout(APIView):
-    def post(self,request):
-        response = Response()
-        response.delete_cookie(key='jwt')
-        response.data = {
-                'message': 'Logged out successfully'
-        }
-        return response
         
 class ProfileImageView(APIView):
     def put(self, request, format=None):
