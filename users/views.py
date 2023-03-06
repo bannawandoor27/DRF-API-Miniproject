@@ -15,6 +15,19 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.parsers import MultiPartParser, FormParser
 
 
+def check_token(request):
+    token = request.META.get('HTTP_AUTHORIZATION')
+    if token is None:
+        raise AuthenticationFailed('User is not logged in')
+    try:
+        payload = jwt.decode(token,'secret_key', algorithms=['HS256'])
+    except jwt.DecodeError:
+        return Response({'error':'Decode error'},status=status.HTTP_401_UNAUTHORIZED)
+    except jwt.ExpiredSignatureError:
+        raise AuthenticationFailed('Invalid token')
+    return payload
+
+
 class Signup(APIView):
     def post(self,request):
         serializer = UserSerializer(data=request.data)
@@ -54,6 +67,7 @@ class Login(APIView):
                             'username':user.username,
                             'mobile':user.mobile_number,
                             'date_of_birth':user.date_of_birth,
+                            'is_superuser': user.is_superuser
 
                         }
 
@@ -62,31 +76,14 @@ class Login(APIView):
 
 class UserView(APIView):
     def get(self,request):
-        token = request.META.get('HTTP_AUTHORIZATION')
-        if token is None:
-            raise AuthenticationFailed('User is not logged in')
-        try:
-            payload = jwt.decode(token,'secret_key', algorithms=['HS256'])
-        except jwt.DecodeError:
-            return Response({'error':'Decode error'},status=status.HTTP_401_UNAUTHORIZED)
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Invalid token')
+        payload = check_token(request)
         user = User.objects.filter(id=payload['user_id']).first()
         serializer = UserSerializer(user)
         return Response(serializer.data)
         
 class ProfileImageView(APIView):
     def put(self, request, format=None):
-        token = request.META.get('HTTP_AUTHORIZATION')
-        print(request.data)
-        if token is None:
-            raise AuthenticationFailed('User is not logged in')
-        try:
-            payload = jwt.decode(token,'secret_key', algorithms=['HS256'])
-        except jwt.DecodeError:
-            return Response({'error':'Decode error'},status=status.HTTP_401_UNAUTHORIZED)
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Invalid token')
+        payload = check_token(request)
         user = User.objects.filter(id=payload['user_id']).first()
         serializer = UserImageSerializer(data=request.data ,instance=user)
         if serializer.is_valid():
@@ -95,3 +92,5 @@ class ProfileImageView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
