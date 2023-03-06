@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
-
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from .serializers import UserSerializer,UserImageSerializer
 from .models import User
@@ -108,6 +108,24 @@ class AdminView(APIView):
                 serializer = UserSerializer(users, many=True)
                 return Response(serializer.data)
             except:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        else :
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        
+    def delete(self, request, *args, **kwargs):
+        payload = check_token(request)
+        is_admin = User.objects.filter(id=payload['user_id']).first().is_superuser
+
+        if is_admin:
+            print(request.query_params)
+            try:
+                username = request.query_params['username']
+                print(username)
+                user = get_object_or_404(User,username = username)
+                user.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except:
+                print('hi')
                 return Response(status=status.HTTP_404_NOT_FOUND)
         else :
             return Response(status=status.HTTP_401_UNAUTHORIZED)
