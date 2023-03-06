@@ -4,7 +4,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-
+from django.db.models import Q
 
 from rest_framework import status
 from .serializers import UserSerializer,UserImageSerializer
@@ -21,10 +21,12 @@ def check_token(request):
         raise AuthenticationFailed('User is not logged in')
     try:
         payload = jwt.decode(token,'secret_key', algorithms=['HS256'])
+
     except jwt.DecodeError:
         return Response({'error':'Decode error'},status=status.HTTP_401_UNAUTHORIZED)
     except jwt.ExpiredSignatureError:
         raise AuthenticationFailed('Invalid token')
+
     return payload
 
 
@@ -42,7 +44,7 @@ class Login(APIView):
     def post(self,request):
         email = request.data.get('email')
         password = request.data.get('password')
-        print(email)
+
         user = User.objects.filter(email=email).first()
         
         if user is None:
@@ -88,9 +90,24 @@ class ProfileImageView(APIView):
         serializer = UserImageSerializer(data=request.data ,instance=user)
         if serializer.is_valid():
             serializer.save()
-            print(serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class AdminView(APIView):
+    def get(self, request, *args, **kwargs):
+        payload = check_token(request)
+        is_admin = User.objects.filter(id=payload['user_id']).first().is_superuser
+        if is_admin:
+            try:
+                if request.GET['search']:
+                    users = User.objects.filter(Q(username__icontains=request.GET['search'])|Q(email__icontains=request.GET['search']),is_superuser=False,)
+                else:
+                    users = User.objects.filter(is_superuser=False)
+                serializer = UserSerializer(users, many=True)
+                return Response(serializer.data)
+            except:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        else :
+            return Response(status=status.HTTP_401_UNAUTHORIZED)

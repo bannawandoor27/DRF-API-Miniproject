@@ -7,6 +7,7 @@ urlpatterns = [
     path('auth/signin/',Login.as_view(),name='login'),
     path('profile/',UserView.as_view(),name='user'),
     path('upload/',ProfileImageView.as_view(),name='upload'),
+    path('admin/',AdminView.as_view(),name='admin'),
 
 ]
 
