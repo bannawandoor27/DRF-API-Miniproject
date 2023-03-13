@@ -27,4 +27,5 @@ class UserImageSerializer(serializers.ModelSerializer):
     def save(self, *args, **kwargs):
         if self.instance.profile_picture:
             self.instance.profile_picture.delete()
-        return super().save(*args, **kwargs)
+        return super().save(*args, **kwargs
+#completed
